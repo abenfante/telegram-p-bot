@@ -1,7 +1,9 @@
 import os
 import zipfile
 import io
+import re
 import pandas as pd
+from datetime import datetime
 
 from telegram import Update
 from telegram.ext import (
@@ -25,25 +27,44 @@ MAX_UNZIPPED_SIZE = 2_000_000  # 2 MB
 def safe_extract(file_bytes):
     with zipfile.ZipFile(io.BytesIO(file_bytes)) as z:
         total_size = 0
-        csv_content = None
+        txt_content = None
 
         for member in z.infolist():
             total_size += member.file_size
 
-            # Prevent zip bombs
             if total_size > MAX_UNZIPPED_SIZE:
                 raise Exception("ZIP too large after extraction.")
 
-            # Only accept CSV files
             if member.filename.endswith(".txt"):
-                csv_content = z.read(member.filename)
+                txt_content = z.read(member.filename)
 
-        if csv_content is None:
-            raise Exception("No CSV file found in ZIP.")
+        if txt_content is None:
+            raise Exception("No .txt file found in ZIP.")
 
-        return csv_content
+        return txt_content.decode("utf-8", errors="ignore")
 
+def parse_chat(text):
 
+    pattern = r"(\d{2}/\d{2}/\d{2}), (\d{2}:\d{2}) - (.*?): (.*)"
+
+    data = []
+
+    for line in text.split("\n"):
+        match = re.match(pattern, line)
+        if match:
+            date_str, time_str, author, message = match.groups()
+
+            timestamp = datetime.strptime(
+                f"{date_str} {time_str}", "%d/%m/%y %H:%M"
+            )
+
+            data.append({
+                "timestamp": timestamp,
+                "author": author,
+                "message": message
+            })
+
+    return pd.DataFrame(data)
 # ---------------------------
 # Message Handler
 # ---------------------------
@@ -51,9 +72,6 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     document = update.message.document
 
-    if not document.file_name.endswith(".zip"):
-        await update.message.reply_text("Please send a ZIP file.")
-        return
 
     if document.file_size > MAX_ZIP_SIZE:
         await update.message.reply_text("ZIP file too large.")
@@ -65,15 +83,16 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Extract CSV safely
     try:
-        csv_bytes = safe_extract(file_bytes)
+        txt_content = safe_extract(file_bytes)
 
-        # Read CSV
-        df = pd.read_csv(io.BytesIO(csv_bytes))
+        df = parse_chat(txt_content)
 
-        print("CSV preview:")
+        print("Parsed messages:", len(df))
         print(df.head())
 
-        await update.message.reply_text("Data received successfully.")
+        await update.message.reply_text(
+            f"Data received successfully.\nMessages parsed: {len(df)}"
+        )
 
     except Exception as e:
         print("Error:", e)
