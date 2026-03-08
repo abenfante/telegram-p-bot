@@ -1,6 +1,7 @@
 import os
 print("CURRENT WORKING DIRECTORY:", os.getcwd())
 print("FILES:", os.listdir("."))
+print("ANALYSES CONTENTS:", os.listdir("analyses"))
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 from utils import safe_extract_txt, parse_chat
