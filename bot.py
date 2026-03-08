@@ -5,7 +5,7 @@ print("ANALYSES CONTENTS:", os.listdir("analyses"))
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 from utils import safe_extract_txt, parse_chat
-from analyses.poop_analysis import count_poop, poop_plus_other
+from analyses.poop_analysis import count_poop, analyze_poop_plus_other
 from analyses.weekly_analysis import weekly_leaderboards, poop_histogram_by_hour, weekly_poop_chart
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
