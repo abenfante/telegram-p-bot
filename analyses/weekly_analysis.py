@@ -2,21 +2,54 @@ import matplotlib.pyplot as plt
 import io
 
 def weekly_leaderboards(df):
+    # Determine latest fully completed week
     last_week = df["week_number"].max()
-    last_week_df = df[df["week_number"] == last_week]
-    last_week_poop = last_week_df.groupby("author")["poop_count"].sum().sort_values(ascending=False)
+    target_week = last_week - 1      # last completed week
+    previous_week = last_week - 2     # week before that
 
-    all_time = df.groupby("author")["poop_count"].sum().sort_values(ascending=False)
+    # Safety check
+    if target_week < 1:
+        return "Not enough data for weekly leaderboard.", ""
 
-    prev_week_df = df[df["week_number"] == last_week - 1]
-    prev_week_poop = prev_week_df.groupby("author")["poop_count"].sum()
+    # Data for target week
+    target_df = df[df["week_number"] == target_week]
+    target_poop = (
+        target_df.groupby("author")["poop_count"]
+        .sum()
+        .sort_values(ascending=False)
+    )
 
-    leaderboard_last_week = []
-    for user, count in last_week_poop.items():
-        prev_count = prev_week_poop.get(user, 0)
-        emoji = "⬆️" if count > prev_count else "⬇️" if count < prev_count else "➡️"
-        leaderboard_last_week.append(f"{emoji} {user}: {count}")
-    return "\n".join(leaderboard_last_week), "\n".join([f"{user}: {count}" for user, count in all_time.items()])
+    # Data for previous week (for comparison arrows)
+    prev_df = df[df["week_number"] == previous_week]
+    prev_poop = prev_df.groupby("author")["poop_count"].sum()
+
+    # Build leaderboard with arrows
+    leaderboard = []
+
+    for user, count in target_poop.items():
+        prev_count = prev_poop.get(user, 0)
+
+        if count > prev_count:
+            emoji = "⬆️"
+        elif count < prev_count:
+            emoji = "⬇️"
+        else:
+            emoji = "➡️"
+
+        leaderboard.append(f"{emoji} {user}: {count}")
+
+    # All-time leaderboard (unchanged)
+    all_time = (
+        df.groupby("author")["poop_count"]
+        .sum()
+        .sort_values(ascending=False)
+    )
+
+    all_time_text = "\n".join(
+        [f"{user}: {count}" for user, count in all_time.items()]
+    )
+
+    return "\n".join(leaderboard), all_time_text
 
 
 def poop_histogram_by_hour(df):
@@ -25,8 +58,8 @@ def poop_histogram_by_hour(df):
     poop_df["hour"] = poop_df["timestamp"].dt.hour
     poop_df["hour"].hist(bins=24, rwidth=0.8)
     plt.xlabel("Hour of Day")
-    plt.ylabel("💩 Messages")
-    plt.title("💩 Messages Distribution by Hour")
+    plt.ylabel("Cacchine")
+    plt.title("Distribuzione oraria")
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
     buf.seek(0)
@@ -41,7 +74,7 @@ def weekly_poop_chart(df):
     weekly.plot(kind="bar")
     plt.xlabel("Week Number")
     plt.ylabel("💩 Messages")
-    plt.title("Weekly 💩 Messages per User")
+    plt.title("Cacchine settimanali individuali")
     plt.tight_layout()
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
