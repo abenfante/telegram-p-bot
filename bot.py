@@ -35,7 +35,7 @@ def safe_extract(file_bytes):
                 raise Exception("ZIP too large after extraction.")
 
             # Only accept CSV files
-            if member.filename.endswith(".csv"):
+            if member.filename.endswith(".txt"):
                 csv_content = z.read(member.filename)
 
         if csv_content is None:
