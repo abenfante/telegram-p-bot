@@ -6,7 +6,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 from utils import safe_extract_txt, parse_chat
 from analyses.poop_analysis import count_poop, analyze_poop_plus_other
-from analyses.weekly_analysis import weekly_leaderboards, poop_histogram_by_hour, weekly_poop_chart
+from analyses.weekly_analysis import compute_leaderboards, poop_histogram_by_hour, weekly_poop_chart
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 MAX_ZIP_SIZE = 200_000
@@ -28,12 +28,18 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         df["poop_count"] = df["message"].str.contains("💩")
         user_emojis_text, leaderboard_text = analyze_poop_plus_other(df)
 
-        await update.message.reply_text("💩 + Emoji per User:\n\n" + user_emojis_text)
-        await update.message.reply_text("💩 + Emoji Leaderboard:\n\n" + leaderboard_text)
+        await update.message.reply_text("Cacche speciali:":\n\n" + user_emojis_text)
+        await update.message.reply_text("Classifica cacche speciali:\n\n" + leaderboard_text)
 
-        leaderboard_week, leaderboard_all = weekly_leaderboards(df)
-        await update.message.reply_text(f"📊 Last Week Leaderboard:\n{leaderboard_week}")
-        await update.message.reply_text(f"📊 All-Time Leaderboard:\n{leaderboard_all}")
+        weekly_text, overall_text = compute_leaderboards(df)
+
+        await update.message.reply_text(
+            f"📊 Classifica della settimana {last_completed}):\n\n{weekly_text}"
+        )
+
+        await update.message.reply_text(
+            f"🏆 Classifica totale:\n\n{overall_text}"
+        )
 
         hist_buf = poop_histogram_by_hour(df)
         weekly_buf = weekly_poop_chart(df)

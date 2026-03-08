@@ -1,55 +1,78 @@
 import matplotlib.pyplot as plt
 import io
 
-def weekly_leaderboards(df):
-    # Determine latest fully completed week
+def compute_leaderboards(df):
+
     last_week = df["week_number"].max()
-    target_week = last_week - 1      # last completed week
-    previous_week = last_week - 2     # week before that
+    last_completed = last_week - 1
 
-    # Safety check
-    if target_week < 1:
-        return "Not enough data for weekly leaderboard.", ""
+    if last_completed < 1:
+        return "Not enough data.", ""
 
-    # Data for target week
-    target_df = df[df["week_number"] == target_week]
-    target_poop = (
-        target_df.groupby("author")["poop_count"]
+    # ---------------------------
+    # Weekly leaderboard (NO arrows)
+    # ---------------------------
+    weekly_df = df[df["week_number"] == last_completed]
+
+    weekly_scores = (
+        weekly_df.groupby("author")["poop_count"]
         .sum()
         .sort_values(ascending=False)
     )
 
-    # Data for previous week (for comparison arrows)
-    prev_df = df[df["week_number"] == previous_week]
-    prev_poop = prev_df.groupby("author")["poop_count"].sum()
+    weekly_text = "\n".join(
+        [f"{user}: {count}" for user, count in weekly_scores.items()]
+    )
 
-    # Build leaderboard with arrows
-    leaderboard = []
+    # ---------------------------
+    # Overall leaderboard (comparison)
+    # ---------------------------
+    overall_current = (
+        df[df["week_number"] <= last_completed]
+        .groupby("author")["poop_count"]
+        .sum()
+        .sort_values(ascending=False)
+    )
 
-    for user, count in target_poop.items():
-        prev_count = prev_poop.get(user, 0)
+    overall_previous = (
+        df[df["week_number"] < last_completed]
+        .groupby("author")["poop_count"]
+        .sum()
+    )
 
-        if count > prev_count:
-            emoji = "⬆️"
-        elif count < prev_count:
-            emoji = "⬇️"
+    # Convert previous totals into ranking
+    previous_rank = overall_previous.sort_values(ascending=False)
+    previous_positions = {
+        user: rank for rank, user in enumerate(previous_rank.index)
+    }
+
+    current_rank = overall_current
+    current_positions = {
+        user: rank for rank, user in enumerate(current_rank.index)
+    }
+
+    overall_text_lines = []
+
+    for user, count in current_rank.items():
+
+        if user in previous_positions:
+            old_pos = previous_positions[user]
+            new_pos = current_positions[user]
+
+            if new_pos < old_pos:
+                arrow = "⬆️"
+            elif new_pos > old_pos:
+                arrow = "⬇️"
+            else:
+                arrow = "➡️"
         else:
-            emoji = "➡️"
+            arrow = "🆕"
 
-        leaderboard.append(f"{emoji} {user}: {count}")
+        overall_text_lines.append(f"{arrow} {user}: {count}")
 
-    # All-time leaderboard (unchanged)
-    all_time = (
-        df.groupby("author")["poop_count"]
-        .sum()
-        .sort_values(ascending=False)
-    )
+    overall_text = "\n".join(overall_text_lines)
 
-    all_time_text = "\n".join(
-        [f"{user}: {count}" for user, count in all_time.items()]
-    )
-
-    return "\n".join(leaderboard), all_time_text
+    return weekly_text, overall_text
 
 
 def poop_histogram_by_hour(df):
