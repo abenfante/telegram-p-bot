@@ -26,7 +26,10 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         txt = safe_extract_txt(file_bytes)
         df = parse_chat(txt)
         df["poop_count"] = df["message"].str.contains("💩")
-        poop_plus_df = poop_plus_other(df)
+        user_emojis_text, leaderboard_text = analyze_poop_plus_other(df)
+
+        await update.message.reply_text("💩 + Emoji per User:\n\n" + user_emojis_text)
+        await update.message.reply_text("💩 + Emoji Leaderboard:\n\n" + leaderboard_text)
 
         leaderboard_week, leaderboard_all = weekly_leaderboards(df)
         await update.message.reply_text(f"📊 Last Week Leaderboard:\n{leaderboard_week}")
@@ -37,9 +40,6 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_photo(photo=hist_buf, caption="💩 Messages by Hour")
         await update.message.reply_photo(photo=weekly_buf, caption="Weekly 💩 Messages per User")
 
-        if not poop_plus_df.empty:
-            await update.message.reply_text(
-                f"💩 + other emoji messages:\n{poop_plus_df[['timestamp', 'author', 'message']].to_string(index=False)}")
     except Exception as e:
         print("Error:", e)
         await update.message.reply_text("Error processing file.")
