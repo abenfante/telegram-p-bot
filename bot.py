@@ -34,7 +34,7 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         weekly_text, overall_text = compute_leaderboards(df)
 
         await update.message.reply_text(
-            f"📊 Classifica della settimana):\n\n{weekly_text}"
+            f"📊 Classifica della settimana:\n\n{weekly_text}"
         )
 
         await update.message.reply_text(
@@ -43,8 +43,8 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         hist_buf = poop_histogram_by_hour(df)
         weekly_buf = weekly_poop_chart(df)
-        await update.message.reply_photo(photo=hist_buf, caption="💩 Messages by Hour")
-        await update.message.reply_photo(photo=weekly_buf, caption="Weekly 💩 Messages per User")
+        await update.message.reply_photo(photo=hist_buf, caption="💩🕛")
+        await update.message.reply_photo(photo=weekly_buf, caption="Come è andata rispetto a prima? 🤔")
 
     except Exception as e:
         print("Error:", e)

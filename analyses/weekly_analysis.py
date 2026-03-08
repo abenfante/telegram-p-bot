@@ -75,18 +75,36 @@ def compute_leaderboards(df):
     return weekly_text, overall_text
 
 
+import io
+import matplotlib.pyplot as plt
+
 def poop_histogram_by_hour(df):
+
     poop_df = df[df["poop_count"]].copy()
-    plt.figure(figsize=(8, 4))
+
+    # Extract hour
     poop_df["hour"] = poop_df["timestamp"].dt.hour
-    poop_df["hour"].hist(bins=24, rwidth=0.8)
+
+    # Count messages per hour
+    hourly_counts = poop_df["hour"].value_counts().sort_index()
+
+    # Force all 24 hours to exist (0–23)
+    hourly_counts = hourly_counts.reindex(range(24), fill_value=0)
+
+    plt.figure(figsize=(8,4))
+
+    plt.bar(hourly_counts.index, hourly_counts.values)
+
+    plt.xticks(range(24))  # Ensure every hour label appears
     plt.xlabel("Hour of Day")
-    plt.ylabel("Cacchine")
-    plt.title("Distribuzione oraria")
+    plt.ylabel("💩 Messages")
+    plt.title("💩 Messages Distribution by Hour")
+
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
     buf.seek(0)
     plt.close()
+
     return buf
 
 
