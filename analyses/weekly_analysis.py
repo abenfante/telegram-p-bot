@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import io
 
 def weekly_leaderboards(df):
     last_week = df["week_number"].max()
@@ -20,7 +20,7 @@ def weekly_leaderboards(df):
 
 
 def poop_histogram_by_hour(df):
-    poop_df = df[df["poop_count"]]
+    poop_df = df[df["poop_count"]].copy()
     plt.figure(figsize=(8, 4))
     poop_df["hour"] = poop_df["timestamp"].dt.hour
     poop_df["hour"].hist(bins=24, rwidth=0.8)
