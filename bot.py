@@ -29,6 +29,15 @@ def safe_extract(file_bytes, max_unzip_size=MAX_UNZIPPED_SIZE):
             raise Exception("No CSV found")
         return csv_content
 
+
+async def debug(update, context):
+    print("Message received!")
+    await update.message.reply_text("I am alive.")
+
+app.add_handler(
+    MessageHandler(filters.ALL, debug)
+)
+
 async def handle_request(request):
     """Cloudflare Worker entry point"""
     try:
@@ -57,6 +66,9 @@ async def handle_request(request):
 
         bot.send_message(update.message.chat.id, "Data received successfully.", parse_mode=ParseMode.MARKDOWN)
         return Response("OK", status=200)
+
+
+
 
     except Exception as e:
         print("Error:", e)
