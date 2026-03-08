@@ -96,9 +96,9 @@ def poop_histogram_by_hour(df):
     plt.bar(hourly_counts.index, hourly_counts.values)
 
     plt.xticks(range(24))  # Ensure every hour label appears
-    plt.xlabel("Hour of Day")
-    plt.ylabel("💩 Messages")
-    plt.title("💩 Messages Distribution by Hour")
+    plt.xlabel("A che ora")
+    plt.ylabel("Quanto spesso")
+    plt.title("Come è spalmata la ... durante la giornata")
 
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
@@ -113,8 +113,8 @@ def weekly_poop_chart(df):
     weekly = poop_df.groupby(["week_number", "author"])["poop_count"].sum().unstack(fill_value=0)
     plt.figure(figsize=(10, 5))
     weekly.plot(kind="bar")
-    plt.xlabel("Week Number")
-    plt.ylabel("💩 Messages")
+    plt.xlabel("Settimana")
+    plt.ylabel("Numero")
     plt.title("Cacchine settimanali individuali")
     plt.tight_layout()
     buf = io.BytesIO()
