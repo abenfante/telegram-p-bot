@@ -77,7 +77,7 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         print("Error:", e)
-        await update.message.reply_text("Error processing file.")
+        await update.message.reply_text("Error processing file." + e)
 
 
 # ---------------------------
