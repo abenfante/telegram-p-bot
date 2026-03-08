@@ -28,7 +28,7 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         df["poop_count"] = df["message"].str.contains("💩")
         user_emojis_text, leaderboard_text = analyze_poop_plus_other(df)
 
-        await update.message.reply_text("Cacche speciali:":\n\n" + user_emojis_text)
+        await update.message.reply_text("Cacche speciali:\n\n" + user_emojis_text)
         await update.message.reply_text("Classifica cacche speciali:\n\n" + leaderboard_text)
 
         weekly_text, overall_text = compute_leaderboards(df)
