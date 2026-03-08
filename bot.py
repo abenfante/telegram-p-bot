@@ -34,7 +34,7 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         weekly_text, overall_text = compute_leaderboards(df)
 
         await update.message.reply_text(
-            f"📊 Classifica della settimana {last_completed}):\n\n{weekly_text}"
+            f"📊 Classifica della settimana):\n\n{weekly_text}"
         )
 
         await update.message.reply_text(
