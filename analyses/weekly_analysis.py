@@ -1,5 +1,6 @@
 import io
 import numpy as np
+import pandas as pd
 
 def compute_leaderboards(df):
 
@@ -139,7 +140,7 @@ def poop_heatmap(df):
 
     plt.imshow(heatmap, aspect="auto")
 
-    plt.colorbar(label="💩 messages")
+    plt.colorbar(label= "Numero di sedute")
 
     plt.xticks(range(24))
     plt.yticks(
@@ -149,7 +150,63 @@ def poop_heatmap(df):
 
     plt.xlabel("Hour of Day")
     plt.ylabel("Day of Week")
-    plt.title("💩 Activity Heatmap")
+    plt.title("Activity Heatmap")
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    plt.close()
+
+    return buf
+
+
+def poop_coupling_heatmap(df, window_minutes=60):
+
+    import matplotlib.pyplot as plt
+
+    poop_df = df[df["poop_count"]].copy()
+    poop_df = poop_df.sort_values("timestamp")
+
+    users = poop_df["author"].unique()
+    user_index = {u:i for i,u in enumerate(users)}
+
+    matrix = np.zeros((len(users), len(users)))
+
+    window = pd.Timedelta(minutes=window_minutes)
+
+    times = poop_df["timestamp"].values
+    authors = poop_df["author"].values
+
+    for i in range(len(poop_df)):
+        t1 = times[i]
+        a1 = authors[i]
+
+        j = i + 1
+        while j < len(poop_df):
+
+            if times[j] - t1 > window:
+                break
+
+            a2 = authors[j]
+
+            if a1 != a2:
+                matrix[user_index[a1], user_index[a2]] += 1
+                matrix[user_index[a2], user_index[a1]] += 1
+
+            j += 1
+
+    plt.figure(figsize=(6,5))
+
+    plt.imshow(matrix)
+
+    plt.colorbar(label="Coupled 💩 events")
+
+    plt.xticks(range(len(users)), users, rotation=45)
+    plt.yticks(range(len(users)), users)
+
+    plt.title(f"💩 Poop Coupling (≤ {window_minutes} min)")
+
+    plt.tight_layout()
 
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
