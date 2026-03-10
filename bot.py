@@ -46,7 +46,7 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         hist_buf = poop_histogram_by_hour(df)
         weekly_buf = weekly_poop_chart(df)
         heatmap_img = poop_heatmap(df)
-        coupling_img = normalized_poop_graph(df, window_minutes=10, threshold= 1.2)
+        coupling_img = normalized_poop_graph(df, window_minutes=20, threshold= 1.2)
         await update.message.reply_photo(photo=hist_buf, caption="💩🕛")
         await update.message.reply_photo(photo=weekly_buf, caption="Come è andata rispetto a prima? 🤔")
         await update.message.reply_photo(heatmap_img)
