@@ -7,7 +7,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 from utils import safe_extract_txt, parse_chat
 from analyses.poop_analysis import count_poop, analyze_poop_plus_other
-from analyses.weekly_analysis import compute_leaderboards, poop_histogram_by_hour, weekly_poop_chart
+from analyses.weekly_analysis import compute_leaderboards, poop_histogram_by_hour, weekly_poop_chart,
+    poop_heatmap
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 MAX_ZIP_SIZE = 200_000

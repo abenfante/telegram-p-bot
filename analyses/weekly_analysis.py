@@ -1,4 +1,5 @@
 import io
+import numpy as np
 
 def compute_leaderboards(df):
 
@@ -73,9 +74,6 @@ def compute_leaderboards(df):
 
     return weekly_text, overall_text
 
-
-import io
-
 def poop_histogram_by_hour(df):
     import matplotlib.pyplot as plt
     poop_df = df[df["poop_count"]].copy()
@@ -120,4 +118,42 @@ def weekly_poop_chart(df):
     plt.savefig(buf, format="png")
     buf.seek(0)
     plt.close()
+    return buf
+
+
+def poop_heatmap(df):
+
+    import matplotlib.pyplot as plt
+
+    poop_df = df[df["poop_count"]].copy()
+
+    poop_df["hour"] = poop_df["timestamp"].dt.hour
+    poop_df["weekday"] = poop_df["timestamp"].dt.weekday  # Monday = 0
+
+    heatmap = np.zeros((7, 24))
+
+    for _, row in poop_df.iterrows():
+        heatmap[row["weekday"], row["hour"]] += 1
+
+    plt.figure(figsize=(10,4))
+
+    plt.imshow(heatmap, aspect="auto")
+
+    plt.colorbar(label="💩 messages")
+
+    plt.xticks(range(24))
+    plt.yticks(
+        range(7),
+        ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    )
+
+    plt.xlabel("Hour of Day")
+    plt.ylabel("Day of Week")
+    plt.title("💩 Activity Heatmap")
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    plt.close()
+
     return buf
