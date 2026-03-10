@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import io
 
 def count_poop(df):
     df["poop_count"] = df["message"].str.contains("💩", regex=False)
