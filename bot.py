@@ -45,10 +45,10 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         hist_buf = poop_histogram_by_hour(df)
         weekly_buf = weekly_poop_chart(df)
-        timeline_img = poop_timeline(df)
+        heatmap_img = poop_heatmap(df)
         await update.message.reply_photo(photo=hist_buf, caption="💩🕛")
         await update.message.reply_photo(photo=weekly_buf, caption="Come è andata rispetto a prima? 🤔")
-        await update.message.reply_photo(timeline_img)
+        await update.message.reply_photo(heatmap_img)
         del df
     except Exception as e:
         print("Error:", e)
