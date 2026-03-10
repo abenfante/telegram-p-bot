@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import io
 
 def compute_leaderboards(df):
@@ -76,10 +75,9 @@ def compute_leaderboards(df):
 
 
 import io
-import matplotlib.pyplot as plt
 
 def poop_histogram_by_hour(df):
-
+    import matplotlib.pyplot as plt
     poop_df = df[df["poop_count"]].copy()
 
     # Extract hour
@@ -104,11 +102,12 @@ def poop_histogram_by_hour(df):
     plt.savefig(buf, format="png")
     buf.seek(0)
     plt.close()
-
+    del poop_df
     return buf
 
 
 def weekly_poop_chart(df):
+    import matplotlib.pyplot as plt
     poop_df = df[df["poop_count"]]
     weekly = poop_df.groupby(["week_number", "author"])["poop_count"].sum().unstack(fill_value=0)
     plt.figure(figsize=(10, 5))

@@ -1,4 +1,5 @@
 import os
+import gc
 print("CURRENT WORKING DIRECTORY:", os.getcwd())
 print("FILES:", os.listdir("."))
 print("ANALYSES CONTENTS:", os.listdir("analyses"))
@@ -45,10 +46,12 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         weekly_buf = weekly_poop_chart(df)
         await update.message.reply_photo(photo=hist_buf, caption="💩🕛")
         await update.message.reply_photo(photo=weekly_buf, caption="Come è andata rispetto a prima? 🤔")
-
+        del df
+        del poop_df
     except Exception as e:
         print("Error:", e)
         await update.message.reply_text("Error processing file.")
+
 
 
 def main():
