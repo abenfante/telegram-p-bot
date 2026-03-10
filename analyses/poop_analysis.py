@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import io
 import matplotlib.pyplot as plt
+import networkx as nx
 
 def count_poop(df):
     df["poop_count"] = df["message"].str.contains("💩", regex=False)
@@ -59,8 +60,9 @@ def analyze_poop_plus_other(df):
     return user_emojis_text, leaderboard_text
 
 
-def normalized_poop_coupling(df, window_minutes=60):
+def normalized_poop_graph(df, window_minutes=60, threshold=1.2):
 
+    import matplotlib.pyplot as plt
 
     poop_df = df[df["poop_count"]].copy()
     poop_df = poop_df.sort_values("timestamp")
@@ -94,37 +96,61 @@ def normalized_poop_coupling(df, window_minutes=60):
 
             j += 1
 
-    # Compute totals
     counts = poop_df["author"].value_counts()
     total_poops = len(poop_df)
 
-    norm_matrix = np.zeros_like(raw_matrix)
+    G = nx.Graph()
+
+    for u in users:
+        G.add_node(u)
 
     for i,u1 in enumerate(users):
         for j,u2 in enumerate(users):
 
-            if i == j:
+            if j <= i:
                 continue
+
+            observed = raw_matrix[i,j]
 
             expected = (counts[u1] * counts[u2]) / total_poops
 
-            if expected > 0:
-                norm_matrix[i,j] = raw_matrix[i,j] / expected
+            if expected == 0:
+                continue
 
-    plt.figure(figsize=(6,5))
-    plt.imshow(norm_matrix)
+            score = observed / expected
 
-    plt.colorbar(label="Normalized coupling")
+            if score >= threshold:
+                G.add_edge(u1, u2, weight=score)
 
-    plt.xticks(range(len(users)), users, rotation=45)
-    plt.yticks(range(len(users)), users)
+    pos = nx.spring_layout(G, seed=42)
 
-    plt.title(f"💩 Normalized Poop Coupling (≤ {window_minutes} min)")
+    edges = G.edges(data=True)
+    weights = [d["weight"]*2 for (_,_,d) in edges]
 
-    plt.tight_layout()
+    plt.figure(figsize=(7,6))
+
+    nx.draw_networkx_nodes(G, pos, node_size=1200)
+    nx.draw_networkx_labels(G, pos)
+
+    nx.draw_networkx_edges(
+        G,
+        pos,
+        width=weights
+    )
+
+    edge_labels = {(u,v):f"{d['weight']:.2f}" for u,v,d in edges}
+
+    nx.draw_networkx_edge_labels(
+        G,
+        pos,
+        edge_labels=edge_labels
+    )
+
+    plt.title(f"💩 Normalized Poop Coupling Network (≤ {window_minutes} min)")
+    plt.axis("off")
 
     buf = io.BytesIO()
-    plt.savefig(buf, format="png")
+    plt.savefig(buf, format="png", bbox_inches="tight")
     buf.seek(0)
     plt.close()
 
