@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import io
+import matplotlib.pyplot as plt
 
 def count_poop(df):
     df["poop_count"] = df["message"].str.contains("💩", regex=False)
@@ -57,9 +58,9 @@ def analyze_poop_plus_other(df):
 
     return user_emojis_text, leaderboard_text
 
-def poop_coupling_heatmap(df, window_minutes=60):
 
-    import matplotlib.pyplot as plt
+def normalized_poop_coupling(df, window_minutes=60):
+
 
     poop_df = df[df["poop_count"]].copy()
     poop_df = poop_df.sort_values("timestamp")
@@ -67,7 +68,7 @@ def poop_coupling_heatmap(df, window_minutes=60):
     users = poop_df["author"].unique()
     user_index = {u:i for i,u in enumerate(users)}
 
-    matrix = np.zeros((len(users), len(users)))
+    raw_matrix = np.zeros((len(users), len(users)))
 
     window = pd.Timedelta(minutes=window_minutes)
 
@@ -75,6 +76,7 @@ def poop_coupling_heatmap(df, window_minutes=60):
     authors = poop_df["author"].values
 
     for i in range(len(poop_df)):
+
         t1 = times[i]
         a1 = authors[i]
 
@@ -87,21 +89,37 @@ def poop_coupling_heatmap(df, window_minutes=60):
             a2 = authors[j]
 
             if a1 != a2:
-                matrix[user_index[a1], user_index[a2]] += 1
-                matrix[user_index[a2], user_index[a1]] += 1
+                raw_matrix[user_index[a1], user_index[a2]] += 1
+                raw_matrix[user_index[a2], user_index[a1]] += 1
 
             j += 1
 
+    # Compute totals
+    counts = poop_df["author"].value_counts()
+    total_poops = len(poop_df)
+
+    norm_matrix = np.zeros_like(raw_matrix)
+
+    for i,u1 in enumerate(users):
+        for j,u2 in enumerate(users):
+
+            if i == j:
+                continue
+
+            expected = (counts[u1] * counts[u2]) / total_poops
+
+            if expected > 0:
+                norm_matrix[i,j] = raw_matrix[i,j] / expected
+
     plt.figure(figsize=(6,5))
+    plt.imshow(norm_matrix)
 
-    plt.imshow(matrix)
-
-    plt.colorbar(label="Coupled 💩 events")
+    plt.colorbar(label="Normalized coupling")
 
     plt.xticks(range(len(users)), users, rotation=45)
     plt.yticks(range(len(users)), users)
 
-    plt.title(f"💩 Poop Coupling (≤ {window_minutes} min)")
+    plt.title(f"💩 Normalized Poop Coupling (≤ {window_minutes} min)")
 
     plt.tight_layout()
 

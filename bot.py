@@ -6,7 +6,7 @@ print("ANALYSES CONTENTS:", os.listdir("analyses"))
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 from utils import safe_extract_txt, parse_chat
-from analyses.poop_analysis import count_poop, analyze_poop_plus_other, poop_coupling_heatmap
+from analyses.poop_analysis import count_poop, analyze_poop_plus_other, normalized_poop_coupling
 from analyses.weekly_analysis \
     import compute_leaderboards, poop_histogram_by_hour, weekly_poop_chart, poop_heatmap
 
@@ -46,7 +46,7 @@ async def handle_zip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         hist_buf = poop_histogram_by_hour(df)
         weekly_buf = weekly_poop_chart(df)
         heatmap_img = poop_heatmap(df)
-        coupling_img = poop_coupling_heatmap(df, window_minutes=60)
+        coupling_img = normalized_poop_coupling(df, window_minutes=60)
         await update.message.reply_photo(photo=hist_buf, caption="💩🕛")
         await update.message.reply_photo(photo=weekly_buf, caption="Come è andata rispetto a prima? 🤔")
         await update.message.reply_photo(heatmap_img)
